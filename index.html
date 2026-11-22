@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lista de tarefas</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+  <main class="container">
+    <header>
+      <h1>Lista de tarefas</h1>
+    </header>
+    <section class="panel" aria-labelledby="form-heading">
+      <form id="task-form">
+        <label id="form-heading" for="task-title">Adicionar tarefa</label>
+        <div class="form-row">
+          <input id="task-title" name="title" type="text" maxlength="120" required autocomplete="off">
+          <button id="submit-task" type="submit">Adicionar</button>
+          <button id="cancel-edit" class="secondary" type="button" hidden>Cancelar</button>
+        </div>
+      </form>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="list-heading">
+      <div class="section-heading">
+        <h2 id="list-heading">Tarefas</h2>
+        <p id="task-count" class="hint">0 tarefas</p>
+      </div>
+      <ul id="task-list" class="task-list"></ul>
+      <p id="empty-state" class="empty-state">Nenhuma tarefa.</p>
+    </section>
+    <noscript>Ative o JavaScript no navegador para usar a lista de tarefas.</noscript>
+  </main>
+</body>
+
+</html>
