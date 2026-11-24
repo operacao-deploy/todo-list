@@ -17,3 +17,15 @@ export function addTask(tasks, title, id = crypto.randomUUID()) {
   }
   return [...tasks, { id, title: description, completed: false }];
 }
+
+function requireTask(tasks, id) {
+  const task = tasks.find((item) => item.id === id);
+  if (!task) throw new Error('Tarefa não encontrada.');
+  return task;
+}
+
+export function editTask(tasks, id, title) {
+  requireTask(tasks, id);
+  const description = validateTitle(title);
+  return tasks.map((task) => task.id === id ? { ...task, title: description } : task);
+}
