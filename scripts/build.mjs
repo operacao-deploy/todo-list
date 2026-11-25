@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = path.resolve(root, 'dist');
-const required = ['index.html', 'css/style.css', 'js/app.js', 'js/tasks.js'];
+const required = ['index.html', 'css/style.css', 'js/app.js', 'js/tasks.js', 'js/storage.js'];
 const scripts = (await readdir(path.join(root, 'js'))).filter((name) => name.endsWith('.js'));
 const files = [...new Set([...required, ...scripts.map((name) => `js/${name}`)])];
 
