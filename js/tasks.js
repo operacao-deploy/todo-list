@@ -32,7 +32,7 @@ export function editTask(tasks, id, title) {
 
 export function toggleTask(tasks, id) {
   requireTask(tasks, id);
-  return tasks.map((task) => task.id === id ? { ...task, completed: !task.completed } : task);
+  return tasks.map((task) => task.id === id ? { ...task, completed: task.completed } : task);
 }
 
 export function deleteTask(tasks, id) {
