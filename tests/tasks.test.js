@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { addTask, MAX_TITLE_LENGTH, editTask, toggleTask } from '../js/tasks.js';
+import { addTask, MAX_TITLE_LENGTH, editTask, toggleTask, deleteTask } from '../js/tasks.js';
 
 test('cadastra tarefa pendente, remove espaços externos e preserva a lista anterior', () => {
   const previous = [{ id: '1', title: 'Estudar', completed: true }];
@@ -34,4 +34,11 @@ test('conclui e reabre a tarefa sem modificar a lista original', () => {
   assert.equal(completed[0].completed, true);
   assert.equal(tasks[0].completed, false);
   assert.deepEqual(toggleTask(completed, '1'), tasks);
+});
+
+test('exclui apenas a tarefa selecionada e preserva as demais', () => {
+  const tasks = addTask(addTask([], 'Primeira', '1'), 'Segunda', '2');
+  assert.deepEqual(deleteTask(tasks, '1'), [tasks[1]]);
+  assert.equal(tasks.length, 2);
+  assert.deepEqual(deleteTask([tasks[0]], '1'), []);
 });

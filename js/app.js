@@ -1,4 +1,4 @@
-import { addTask, editTask, toggleTask } from './tasks.js';
+import { addTask, editTask, toggleTask, deleteTask } from './tasks.js';
 
 const form = document.querySelector('#task-form');
 const titleInput = document.querySelector('#task-title');
@@ -62,7 +62,23 @@ function render() {
     const actions = document.createElement('div');
     actions.className = 'task-actions';
     actions.append(editButton);
-
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.className = 'secondary danger';
+    deleteButton.textContent = 'Excluir';
+    deleteButton.setAttribute('aria-label', 'Excluir tarefa: ' + task.title);
+    deleteButton.addEventListener('click', () => {
+      try {
+        tasks = deleteTask(tasks, task.id);
+        render();
+        if (editingId === task.id) resetForm();
+        titleInput.focus();
+        showMessage('Tarefa excluída.');
+      } catch (error) {
+        showMessage(error.message, true);
+      }
+    });
+    actions.append(deleteButton);
     item.append(checkbox, title, actions);
     taskList.append(item);
   }
