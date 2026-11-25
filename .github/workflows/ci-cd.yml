@@ -36,3 +36,39 @@ jobs:
           package-manager-cache: false
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run build
+      - name: Guardar resultado do build
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
+
+  deploy:
+    name: Entrega e publicação no Pages
+    needs: [tests, build]
+    # Sem always(): falha em qualquer verificação impede este job.
+    # Usa a branch padrão do repositório, seja main, master ou outro nome.
+    if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Recuperar o mesmo build aprovado
+        uses: actions/download-artifact@v8
+        with:
+          name: site-${{ github.sha }}
+          path: dist/
+      - uses: actions/configure-pages@v5
+      - name: Preparar entrega para o Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist/
+      - name: Publicar versão aprovada
+        id: deployment
+        uses: actions/deploy-pages@v4
