@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { addTask, MAX_TITLE_LENGTH, editTask } from '../js/tasks.js';
+import { addTask, MAX_TITLE_LENGTH, editTask, toggleTask, deleteTask, searchTasks } from '../js/tasks.js';
 
 test('cadastra tarefa pendente, remove espaços externos e preserva a lista anterior', () => {
   const previous = [{ id: '1', title: 'Estudar', completed: true }];
@@ -26,4 +26,25 @@ test('edita somente a tarefa escolhida, preservando identificador e conclusão',
   assert.deepEqual(result[0], { id: '1', title: 'Revisar CI', completed: true });
   assert.deepEqual(result[1], tasks[1]);
   assert.equal(tasks[0].title, 'Estudar');
+});
+
+test('conclui e reabre a tarefa sem modificar a lista original', () => {
+  const tasks = addTask([], 'Testar o pipeline', '1');
+  const completed = toggleTask(tasks, '1');
+  assert.equal(completed[0].completed, true);
+  assert.equal(tasks[0].completed, false);
+  assert.deepEqual(toggleTask(completed, '1'), tasks);
+});
+
+test('exclui apenas a tarefa selecionada e preserva as demais', () => {
+  const tasks = addTask(addTask([], 'Primeira', '1'), 'Segunda', '2');
+  assert.deepEqual(deleteTask(tasks, '1'), [tasks[1]]);
+  assert.equal(tasks.length, 2);
+  assert.deepEqual(deleteTask([tasks[0]], '1'), []);
+});
+
+test('busca por trecho ignorando maiúsculas e acentos', () => {
+  const tasks = addTask(addTask([], 'Preparar apresentação', '1'), 'Ler documentação', '2');
+  assert.deepEqual(searchTasks(tasks, '  APRESENTACAO '), [tasks[0]]);
+  assert.deepEqual(searchTasks(tasks, 'documentação'), [tasks[1]]);
 });
