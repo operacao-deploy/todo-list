@@ -29,3 +29,8 @@ export function editTask(tasks, id, title) {
   const description = validateTitle(title);
   return tasks.map((task) => task.id === id ? { ...task, title: description } : task);
 }
+
+export function toggleTask(tasks, id) {
+  requireTask(tasks, id);
+  return tasks.map((task) => task.id === id ? { ...task, completed: !task.completed } : task);
+}

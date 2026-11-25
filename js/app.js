@@ -1,4 +1,4 @@
-import { addTask, editTask } from './tasks.js';
+import { addTask, editTask, toggleTask } from './tasks.js';
 
 const form = document.querySelector('#task-form');
 const titleInput = document.querySelector('#task-title');
@@ -24,9 +24,25 @@ function render() {
   for (const task of visibleTasks) {
     const item = document.createElement('li');
     item.className = 'task';
-
-    const title = document.createElement('span');
-
+    item.classList.toggle('completed', task.completed);
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = 'task-' + task.id;
+    checkbox.checked = task.completed;
+    checkbox.setAttribute('aria-label', (task.completed ? 'Reabrir' : 'Concluir') + ' tarefa: ' + task.title);
+    checkbox.addEventListener('change', () => {
+      try {
+        tasks = toggleTask(tasks, task.id);
+        render();
+        showMessage(task.completed ? 'Tarefa reaberta.' : 'Tarefa concluída.');
+      } catch (error) {
+        render();
+        showMessage(error.message, true);
+      }
+      document.getElementById(checkbox.id)?.focus();
+    });
+    const title = document.createElement('label');
+    title.htmlFor = checkbox.id;
     title.className = 'task-title';
     title.textContent = task.title;
     const editButton = document.createElement('button');
@@ -47,7 +63,7 @@ function render() {
     actions.className = 'task-actions';
     actions.append(editButton);
 
-    item.append(title, actions);
+    item.append(checkbox, title, actions);
     taskList.append(item);
   }
   const completed = tasks.filter((task) => task.completed).length;
