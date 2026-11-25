@@ -1,4 +1,4 @@
-import { addTask, editTask, toggleTask, deleteTask } from './tasks.js';
+import { addTask, editTask, toggleTask, deleteTask, searchTasks } from './tasks.js';
 
 const form = document.querySelector('#task-form');
 const titleInput = document.querySelector('#task-title');
@@ -9,7 +9,8 @@ const message = document.querySelector('#message');
 const formHeading = document.querySelector('#form-heading');
 const submitButton = document.querySelector('#submit-task');
 const cancelButton = document.querySelector('#cancel-edit');
-
+const searchInput = document.querySelector('#task-search');
+const searchCount = document.querySelector('#search-count');
 let tasks = [];
 let editingId = null;
 
@@ -20,7 +21,7 @@ function showMessage(text, isError = false) {
 
 function render() {
   taskList.replaceChildren();
-  const visibleTasks = tasks;
+  const visibleTasks = searchTasks(tasks, searchInput.value);
   for (const task of visibleTasks) {
     const item = document.createElement('li');
     item.className = 'task';
@@ -85,8 +86,8 @@ function render() {
   const completed = tasks.filter((task) => task.completed).length;
   taskCount.textContent = tasks.length + ' ' + (tasks.length === 1 ? 'tarefa' : 'tarefas') + ' · ' + completed + ' ' + (completed === 1 ? 'concluída' : 'concluídas');
   emptyState.hidden = visibleTasks.length > 0;
-  emptyState.textContent = 'Nenhuma tarefa.';
-
+  emptyState.textContent = searchInput.value.trim() ? 'Nenhum resultado.' : 'Nenhuma tarefa.';
+  searchCount.textContent = searchInput.value.trim() ? `${visibleTasks.length} ${visibleTasks.length === 1 ? 'resultado' : 'resultados'}` : '';
 }
 
 function resetForm() {
@@ -101,7 +102,7 @@ cancelButton.addEventListener('click', () => {
   resetForm();
   showMessage('Edição cancelada.');
 });
-
+searchInput.addEventListener('input', render);
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   try {

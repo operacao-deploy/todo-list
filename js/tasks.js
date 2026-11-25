@@ -39,3 +39,12 @@ export function deleteTask(tasks, id) {
   requireTask(tasks, id);
   return tasks.filter((task) => task.id !== id);
 }
+
+function searchable(text) {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
+}
+
+export function searchTasks(tasks, query = '') {
+  const term = searchable(query.trim());
+  return tasks.filter((task) => searchable(task.title).includes(term));
+}
