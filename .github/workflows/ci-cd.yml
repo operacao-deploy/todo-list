@@ -36,3 +36,10 @@ jobs:
           package-manager-cache: false
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run build
+      - name: Guardar resultado do build
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
