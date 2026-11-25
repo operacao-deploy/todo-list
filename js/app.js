@@ -1,4 +1,5 @@
 import { addTask, editTask, toggleTask, deleteTask, searchTasks } from './tasks.js';
+import { loadTasks, saveTasks } from './storage.js';
 
 const form = document.querySelector('#task-form');
 const titleInput = document.querySelector('#task-title');
@@ -28,13 +29,12 @@ function render() {
     item.classList.toggle('completed', task.completed);
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.id = 'task-' + task.id;
+    checkbox.id = `task-${task.id}`;
     checkbox.checked = task.completed;
-    checkbox.setAttribute('aria-label', (task.completed ? 'Reabrir' : 'Concluir') + ' tarefa: ' + task.title);
+    checkbox.setAttribute('aria-label', `${task.completed ? 'Reabrir' : 'Concluir'} tarefa: ${task.title}`);
     checkbox.addEventListener('change', () => {
       try {
-        tasks = toggleTask(tasks, task.id);
-        render();
+        commitTasks(toggleTask(tasks, task.id));
         showMessage(task.completed ? 'Tarefa reaberta.' : 'Tarefa concluída.');
       } catch (error) {
         render();
@@ -50,7 +50,7 @@ function render() {
     editButton.type = 'button';
     editButton.className = 'secondary';
     editButton.textContent = 'Editar';
-    editButton.setAttribute('aria-label', 'Editar tarefa: ' + task.title);
+    editButton.setAttribute('aria-label', `Editar tarefa: ${task.title}`);
     editButton.addEventListener('click', () => {
       editingId = task.id;
       titleInput.value = task.title;
@@ -60,18 +60,14 @@ function render() {
       titleInput.focus();
       showMessage('');
     });
-    const actions = document.createElement('div');
-    actions.className = 'task-actions';
-    actions.append(editButton);
     const deleteButton = document.createElement('button');
     deleteButton.type = 'button';
     deleteButton.className = 'secondary danger';
     deleteButton.textContent = 'Excluir';
-    deleteButton.setAttribute('aria-label', 'Excluir tarefa: ' + task.title);
+    deleteButton.setAttribute('aria-label', `Excluir tarefa: ${task.title}`);
     deleteButton.addEventListener('click', () => {
       try {
-        tasks = deleteTask(tasks, task.id);
-        render();
+        commitTasks(deleteTask(tasks, task.id));
         if (editingId === task.id) resetForm();
         titleInput.focus();
         showMessage('Tarefa excluída.');
@@ -79,15 +75,20 @@ function render() {
         showMessage(error.message, true);
       }
     });
-    actions.append(deleteButton);
+    const actions = document.createElement('div');
+    actions.className = 'task-actions';
+    actions.append(editButton, deleteButton);
     item.append(checkbox, title, actions);
     taskList.append(item);
   }
   const completed = tasks.filter((task) => task.completed).length;
-  taskCount.textContent = tasks.length + ' ' + (tasks.length === 1 ? 'tarefa' : 'tarefas') + ' · ' + completed + ' ' + (completed === 1 ? 'concluída' : 'concluídas');
+  taskCount.textContent = `${tasks.length} ${tasks.length === 1 ? 'tarefa' : 'tarefas'} · ${completed} ${completed === 1 ? 'concluída' : 'concluídas'}`;
   emptyState.hidden = visibleTasks.length > 0;
-  emptyState.textContent = searchInput.value.trim() ? 'Nenhum resultado.' : 'Nenhuma tarefa.';
-  searchCount.textContent = searchInput.value.trim() ? `${visibleTasks.length} ${visibleTasks.length === 1 ? 'resultado' : 'resultados'}` : '';
+  emptyState.textContent = searchInput.value.trim()
+    ? 'Nenhum resultado.'
+    : 'Nenhuma tarefa.';
+  searchCount.textContent = searchInput.value.trim()
+    ? `${visibleTasks.length} ${visibleTasks.length === 1 ? 'resultado' : 'resultados'}` : '';
 }
 
 function resetForm() {
@@ -98,21 +99,44 @@ function resetForm() {
   cancelButton.hidden = true;
   titleInput.focus();
 }
+
 cancelButton.addEventListener('click', () => {
   resetForm();
   showMessage('Edição cancelada.');
 });
+
 searchInput.addEventListener('input', render);
+
+function commitTasks(nextTasks) {
+  // Só confirma a mudança na tela depois de salvar com sucesso.
+  saveTasks(nextTasks);
+  tasks = nextTasks;
+  render();
+}
+
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   try {
     const editing = editingId !== null;
-    tasks = editing ? editTask(tasks, editingId, titleInput.value) : addTask(tasks, titleInput.value);
-    render();
+    const nextTasks = editing
+      ? editTask(tasks, editingId, titleInput.value)
+      : addTask(tasks, titleInput.value);
+    commitTasks(nextTasks);
     resetForm();
     showMessage(editing ? 'Tarefa atualizada.' : 'Tarefa adicionada.');
   } catch (error) {
     showMessage(error.message, true);
   }
 });
-render();
+
+try {
+  tasks = loadTasks();
+  render();
+} catch (error) {
+  titleInput.disabled = true;
+  submitButton.disabled = true;
+  searchInput.disabled = true;
+  emptyState.textContent = 'A lista não pôde ser carregada.';
+  taskCount.textContent = 'Armazenamento indisponível';
+  showMessage(error.message, true);
+}
